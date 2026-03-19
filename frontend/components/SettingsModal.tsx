@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Eye, EyeOff, LogOut, Info } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
+import { X, Eye, EyeOff, Info } from 'lucide-react';
 import {
   useAiSettingsStore,
   PROVIDER_MODELS,
@@ -16,7 +15,6 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const { signOut } = useAuthStore();
   const {
     provider,
     model,
@@ -33,12 +31,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     anthropic: false,
     google: false,
   });
-
-  const handleSignOut = async () => {
-    await signOut();
-    onClose();
-    window.location.href = '/login';
-  };
 
   if (!isOpen) return null;
 
@@ -153,14 +145,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
         </div>
 
-        <div className="sticky bottom-0 glass-heavy border-t border-white/20 px-6 py-4 flex items-center justify-between rounded-b-3xl">
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-2 px-4 py-2 text-destructive hover:bg-red-50/60 rounded-2xl transition-colors font-medium"
-          >
-            <LogOut className="w-4 h-4" />
-            로그아웃
-          </button>
+        <div className="sticky bottom-0 glass-heavy border-t border-white/20 px-6 py-4 flex items-center justify-end rounded-b-3xl">
           <button
             onClick={onClose}
             className="px-6 py-2 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-colors font-medium shadow-lg shadow-primary/25"
