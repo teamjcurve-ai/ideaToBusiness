@@ -13,6 +13,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: #007AFF;
+  --color-primary-dark: #0051D5;
+  --color-primary-light: #409CFF;
+  --color-destructive: #FF3B30;
+  --color-success: #34C759;
+  --color-warning: #FF9500;
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif;
 }
 

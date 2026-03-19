@@ -30,20 +30,30 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const supabaseId = payload.sub;
     const email = payload.email;
 
+    console.log('[JWT] Validating token for:', { supabaseId, email });
+
     if (!supabaseId || !email) {
+      console.error('[JWT] Missing supabaseId or email in token payload');
       throw new UnauthorizedException('인증되지 않은 사용자입니다.');
     }
 
-    const user = await this.authService.findOrCreateUser(
-      supabaseId,
-      email,
-      payload.user_metadata?.full_name || payload.user_metadata?.name,
-    );
+    try {
+      const user = await this.authService.findOrCreateUser(
+        supabaseId,
+        email,
+        payload.user_metadata?.full_name || payload.user_metadata?.name,
+      );
 
-    if (!user) {
-      throw new UnauthorizedException('인증되지 않은 사용자입니다.');
+      if (!user) {
+        console.error('[JWT] findOrCreateUser returned null');
+        throw new UnauthorizedException('인증되지 않은 사용자입니다.');
+      }
+
+      console.log('[JWT] User authenticated:', user.id);
+      return user;
+    } catch (error) {
+      console.error('[JWT] Error in validate:', error);
+      throw new UnauthorizedException('인증 처리 중 오류가 발생했습니다.');
     }
-
-    return user;
   }
 }
