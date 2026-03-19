@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Play, RotateCw, Loader2, Rocket, CheckCircle2 } from 'lucide-react';
 import StepLayout from '@/components/StepLayout';
@@ -10,10 +10,11 @@ import { aiRequest } from '@/lib/aiRequest';
 import { useProjectStore } from '@/store/projectStore';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function Step8Page({ params }: PageProps) {
+  const { id } = use(params);
   const router = useRouter();
   const { currentProject, setCurrentProject, updateStep } = useProjectStore();
   const [loading, setLoading] = useState(true);
@@ -22,11 +23,11 @@ export default function Step8Page({ params }: PageProps) {
 
   useEffect(() => {
     loadProject();
-  }, [params.id]);
+  }, [id]);
 
   const loadProject = async () => {
     try {
-      const response = await api.get(`/projects/${params.id}`);
+      const response = await api.get(`/projects/${id}`);
       setCurrentProject(response.data);
 
       const step = response.data.steps.find((s: any) => s.stepNumber === 8);
@@ -52,7 +53,7 @@ export default function Step8Page({ params }: PageProps) {
         return acc;
       }, {});
 
-      await api.put(`/projects/${params.id}/steps/8`, { status: 'IN_PROGRESS' });
+      await api.put(`/projects/${id}/steps/8`, { status: 'IN_PROGRESS' });
 
       const response = await aiRequest('/ai/kickoff', {
         projectTitle: currentProject?.title,
@@ -60,13 +61,13 @@ export default function Step8Page({ params }: PageProps) {
       });
       const generatedContent = response.content;
 
-      await api.put(`/projects/${params.id}/steps/8`, {
+      await api.put(`/projects/${id}/steps/8`, {
         content: generatedContent,
         status: 'COMPLETED',
       });
 
       setContent(generatedContent);
-      updateStep(params.id, 8, { content: generatedContent, status: 'COMPLETED' });
+      updateStep(id, 8, { content: generatedContent, status: 'COMPLETED' });
     } catch (error: any) {
       alert(error.response?.data?.message || error.message || '생성에 실패했습니다.');
     } finally {
@@ -77,7 +78,7 @@ export default function Step8Page({ params }: PageProps) {
   const handleDeleteProject = async () => {
     if (confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) {
       try {
-        await api.delete(`/projects/${params.id}`);
+        await api.delete(`/projects/${id}`);
         router.push('/projects');
       } catch (error) {
         console.error('삭제 실패:', error);

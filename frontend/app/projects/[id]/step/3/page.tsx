@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Play, RotateCw, Loader2, Users, Target } from 'lucide-react';
 import StepLayout from '@/components/StepLayout';
@@ -10,10 +10,11 @@ import { aiRequest } from '@/lib/aiRequest';
 import { useProjectStore } from '@/store/projectStore';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function Step3Page({ params }: PageProps) {
+  const { id } = use(params);
   const router = useRouter();
   const { currentProject, setCurrentProject, updateStep } = useProjectStore();
   const [loading, setLoading] = useState(true);
@@ -23,11 +24,11 @@ export default function Step3Page({ params }: PageProps) {
 
   useEffect(() => {
     loadProject();
-  }, [params.id]);
+  }, [id]);
 
   const loadProject = async () => {
     try {
-      const response = await api.get(`/projects/${params.id}`);
+      const response = await api.get(`/projects/${id}`);
       setCurrentProject(response.data);
 
       const step = response.data.steps.find((s: any) => s.stepNumber === 3);
@@ -51,7 +52,7 @@ export default function Step3Page({ params }: PageProps) {
         return;
       }
 
-      await api.put(`/projects/${params.id}/steps/3`, { status: 'IN_PROGRESS' });
+      await api.put(`/projects/${id}/steps/3`, { status: 'IN_PROGRESS' });
 
       // Step 1: Generate personas
       setPhase('personas');
@@ -78,7 +79,7 @@ export default function Step3Page({ params }: PageProps) {
         `\n\n... 외 ${Math.max(0, personasResponse.personas.length - 5)}명\n\n---\n\n` +
         icpResponse.content;
 
-      await api.put(`/projects/${params.id}/steps/3`, {
+      await api.put(`/projects/${id}/steps/3`, {
         content: fullContent,
         data: { personas: personasResponse.personas },
         status: 'COMPLETED',
@@ -86,7 +87,7 @@ export default function Step3Page({ params }: PageProps) {
 
       setContent(fullContent);
       setPhase('done');
-      updateStep(params.id, 3, { content: fullContent, status: 'COMPLETED' });
+      updateStep(id, 3, { content: fullContent, status: 'COMPLETED' });
     } catch (error: any) {
       alert(error.response?.data?.message || error.message || '생성에 실패했습니다.');
     } finally {
@@ -97,7 +98,7 @@ export default function Step3Page({ params }: PageProps) {
   const handleDeleteProject = async () => {
     if (confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) {
       try {
-        await api.delete(`/projects/${params.id}`);
+        await api.delete(`/projects/${id}`);
         router.push('/projects');
       } catch (error) {
         console.error('삭제 실패:', error);
@@ -184,7 +185,7 @@ export default function Step3Page({ params }: PageProps) {
               </button>
 
               <button
-                onClick={() => router.push(`/projects/${params.id}/step/4`)}
+                onClick={() => router.push(`/projects/${id}/step/4`)}
                 className="px-6 py-2.5 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-colors font-medium shadow-lg shadow-primary/25"
               >
                 다음 단계 →

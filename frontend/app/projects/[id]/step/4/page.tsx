@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Play, RotateCw, Loader2, Layers } from 'lucide-react';
 import StepLayout from '@/components/StepLayout';
@@ -10,10 +10,11 @@ import { aiRequest } from '@/lib/aiRequest';
 import { useProjectStore } from '@/store/projectStore';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function Step4Page({ params }: PageProps) {
+  const { id } = use(params);
   const router = useRouter();
   const { currentProject, setCurrentProject, updateStep } = useProjectStore();
   const [loading, setLoading] = useState(true);
@@ -22,11 +23,11 @@ export default function Step4Page({ params }: PageProps) {
 
   useEffect(() => {
     loadProject();
-  }, [params.id]);
+  }, [id]);
 
   const loadProject = async () => {
     try {
-      const response = await api.get(`/projects/${params.id}`);
+      const response = await api.get(`/projects/${id}`);
       setCurrentProject(response.data);
 
       const step = response.data.steps.find((s: any) => s.stepNumber === 4);
@@ -51,18 +52,18 @@ export default function Step4Page({ params }: PageProps) {
         return;
       }
 
-      await api.put(`/projects/${params.id}/steps/4`, { status: 'IN_PROGRESS' });
+      await api.put(`/projects/${id}/steps/4`, { status: 'IN_PROGRESS' });
 
       const response = await aiRequest('/ai/features', { icpData });
       const generatedContent = response.content;
 
-      await api.put(`/projects/${params.id}/steps/4`, {
+      await api.put(`/projects/${id}/steps/4`, {
         content: generatedContent,
         status: 'COMPLETED',
       });
 
       setContent(generatedContent);
-      updateStep(params.id, 4, { content: generatedContent, status: 'COMPLETED' });
+      updateStep(id, 4, { content: generatedContent, status: 'COMPLETED' });
     } catch (error: any) {
       alert(error.response?.data?.message || error.message || '생성에 실패했습니다.');
     } finally {
@@ -73,7 +74,7 @@ export default function Step4Page({ params }: PageProps) {
   const handleDeleteProject = async () => {
     if (confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) {
       try {
-        await api.delete(`/projects/${params.id}`);
+        await api.delete(`/projects/${id}`);
         router.push('/projects');
       } catch (error) {
         console.error('삭제 실패:', error);
@@ -144,7 +145,7 @@ export default function Step4Page({ params }: PageProps) {
                 <RotateCw className="w-4 h-4" /> 재생성
               </button>
               <button
-                onClick={() => router.push(`/projects/${params.id}/step/5`)}
+                onClick={() => router.push(`/projects/${id}/step/5`)}
                 className="px-6 py-2.5 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-colors font-medium shadow-lg shadow-primary/25"
               >
                 다음 단계 →

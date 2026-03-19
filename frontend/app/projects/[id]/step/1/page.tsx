@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save } from 'lucide-react';
 import StepLayout from '@/components/StepLayout';
@@ -8,9 +8,7 @@ import { api } from '@/lib/api';
 import { useProjectStore } from '@/store/projectStore';
 
 interface PageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 const KPI_OPTIONS = [
@@ -22,6 +20,7 @@ const KPI_OPTIONS = [
 ];
 
 export default function Step1Page({ params }: PageProps) {
+  const { id } = use(params);
   const router = useRouter();
   const { currentProject, setCurrentProject, updateStep } = useProjectStore();
   const [loading, setLoading] = useState(true);
@@ -38,11 +37,11 @@ export default function Step1Page({ params }: PageProps) {
 
   useEffect(() => {
     loadProject();
-  }, [params.id]);
+  }, [id]);
 
   const loadProject = async () => {
     try {
-      const response = await api.get(`/projects/${params.id}`);
+      const response = await api.get(`/projects/${id}`);
       setCurrentProject(response.data);
 
       const step = response.data.steps.find((s: any) => s.stepNumber === 1);
@@ -59,15 +58,15 @@ export default function Step1Page({ params }: PageProps) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.put(`/projects/${params.id}/steps/1`, {
+      await api.put(`/projects/${id}/steps/1`, {
         data: formData,
         status: 'COMPLETED',
       });
 
-      updateStep(params.id, 1, { data: formData, status: 'COMPLETED' });
+      updateStep(id, 1, { data: formData, status: 'COMPLETED' });
 
-      await api.put(`/projects/${params.id}`, { currentStep: 2 });
-      router.push(`/projects/${params.id}/step/2`);
+      await api.put(`/projects/${id}`, { currentStep: 2 });
+      router.push(`/projects/${id}/step/2`);
     } catch (error) {
       console.error('저장 실패:', error);
     } finally {
@@ -87,7 +86,7 @@ export default function Step1Page({ params }: PageProps) {
   const handleDeleteProject = async () => {
     if (confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) {
       try {
-        await api.delete(`/projects/${params.id}`);
+        await api.delete(`/projects/${id}`);
         router.push('/projects');
       } catch (error) {
         console.error('삭제 실패:', error);
