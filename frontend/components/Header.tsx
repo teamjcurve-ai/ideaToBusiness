@@ -1,7 +1,8 @@
 'use client';
 
-import { Settings, User, Menu } from 'lucide-react';
-import { useState } from 'react';
+import { Settings, User, Menu, LogOut } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import SettingsModal from './SettingsModal';
 import { useAuthStore } from '@/store/authStore';
 
@@ -12,8 +13,27 @@ interface HeaderProps {
 }
 
 export default function Header({ title, breadcrumb, onMenuToggle }: HeaderProps) {
+  const router = useRouter();
   const [showSettings, setShowSettings] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((state) => state.user);
+  const signOut = useAuthStore((state) => state.signOut);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  };
 
   const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || '사용자';
   const avatarUrl = user?.user_metadata?.avatar_url;
@@ -48,15 +68,36 @@ export default function Header({ title, breadcrumb, onMenuToggle }: HeaderProps)
             <Settings className="w-5 h-5 text-gray-600" />
           </button>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/40 rounded-full">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="w-5 h-5 rounded-full" />
-            ) : (
-              <User className="w-4 h-4 text-gray-600" />
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white/40 hover:bg-white/60 rounded-full transition-colors cursor-pointer"
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="w-5 h-5 rounded-full" />
+              ) : (
+                <User className="w-4 h-4 text-gray-600" />
+              )}
+              <span className="text-sm font-medium text-gray-700 hidden sm:inline max-w-[120px] truncate">
+                {displayName}
+              </span>
+            </button>
+
+            {showProfileMenu && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden z-50">
+                <div className="px-4 py-3 border-b border-gray-100">
+                  <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
+                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  로그아웃
+                </button>
+              </div>
             )}
-            <span className="text-sm font-medium text-gray-700 hidden sm:inline max-w-[120px] truncate">
-              {displayName}
-            </span>
           </div>
         </div>
       </header>
