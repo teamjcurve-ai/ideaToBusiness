@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Play, RotateCw, Loader2, Layers } from 'lucide-react';
+import { Play, RotateCw, Loader2, Layers, Lock } from 'lucide-react';
 import StepLayout from '@/components/StepLayout';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { api } from '@/lib/api';
@@ -82,11 +82,46 @@ export default function Step4Page({ params }: PageProps) {
     }
   };
 
+  const prevStep = currentProject?.steps?.find((s: any) => s.stepNumber === 3);
+  const prevStepCompleted = prevStep?.status === 'COMPLETED';
+
   if (loading || !currentProject) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-500">로딩 중...</p>
       </div>
+    );
+  }
+
+  if (!prevStepCompleted) {
+    return (
+      <StepLayout
+        projectId={currentProject.id}
+        projectTitle={currentProject.title}
+        projectDate={new Date(currentProject.createdAt).toLocaleDateString('ko-KR')}
+        currentStep={4}
+        steps={currentProject.steps}
+        breadcrumb="4단계: 핵심 기능 선정"
+        onDeleteProject={handleDeleteProject}
+      >
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
+          <div className="glass-heavy rounded-3xl p-12 text-center">
+            <div className="p-3 bg-gray-100 rounded-2xl inline-block mb-6">
+              <Lock className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">이전 단계를 먼저 완료해주세요</h3>
+            <p className="text-gray-600 mb-6">
+              3단계를 완료해야 이 단계를 시작할 수 있습니다.
+            </p>
+            <button
+              onClick={() => router.push(`/projects/${id}/step/3`)}
+              className="px-6 py-2.5 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-colors font-medium shadow-lg shadow-primary/25"
+            >
+              3단계로 이동
+            </button>
+          </div>
+        </div>
+      </StepLayout>
     );
   }
 
