@@ -68,14 +68,14 @@ export default function Sidebar({
   return (
     <aside
       className={`
-        w-72 glass-heavy flex flex-col h-[calc(100vh-4rem)]
+        w-64 bg-white border-r border-gray-200 flex flex-col h-[calc(100vh-4rem)]
         fixed md:static inset-y-16 left-0 z-40
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}
     >
       {/* Back to List */}
-      <div className="p-4 border-b border-white/20">
+      <div className="p-4 border-b border-gray-100">
         <Link
           href="/projects"
           onClick={handleLinkClick}
@@ -87,7 +87,7 @@ export default function Sidebar({
       </div>
 
       {/* Project Info */}
-      <div className="p-4 border-b border-white/20">
+      <div className="p-4 border-b border-gray-100">
         <h3 className="font-semibold text-gray-900 mb-1 truncate">{projectTitle}</h3>
         <p className="text-xs text-gray-500">{projectDate}</p>
       </div>
@@ -105,8 +105,8 @@ export default function Sidebar({
               className={`
                 flex items-start gap-3 px-3 py-2.5 rounded-2xl transition-all
                 ${isActive
-                  ? 'bg-primary/10 border border-primary/20'
-                  : 'hover:bg-white/40'
+                  ? 'bg-blue-50 border border-blue-100'
+                  : 'hover:bg-gray-50'
                 }
               `}
             >
@@ -131,7 +131,7 @@ export default function Sidebar({
       </nav>
 
       {/* Delete Project */}
-      <div className="p-4 border-t border-white/20">
+      <div className="p-4 border-t border-gray-100">
         <button
           onClick={onDeleteProject}
           className="flex items-center gap-2 text-sm text-destructive hover:text-red-700 transition-colors"

@@ -40,12 +40,12 @@ export default function Header({ title, breadcrumb, onMenuToggle }: HeaderProps)
 
   return (
     <>
-      <header className="h-16 glass-heavy sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6">
+      <header className="h-16 bg-white border-b border-gray-200 sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
           {onMenuToggle && (
             <button
               onClick={onMenuToggle}
-              className="p-2 hover:bg-white/40 rounded-xl transition-colors md:hidden"
+              className="p-2 hover:bg-gray-100 rounded-xl transition-colors md:hidden"
             >
               <Menu className="w-5 h-5 text-gray-700" />
             </button>
@@ -62,7 +62,7 @@ export default function Header({ title, breadcrumb, onMenuToggle }: HeaderProps)
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => setShowSettings(true)}
-            className="p-2 hover:bg-white/40 rounded-xl transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
             title="설정"
           >
             <Settings className="w-5 h-5 text-gray-600" />
@@ -71,7 +71,7 @@ export default function Header({ title, breadcrumb, onMenuToggle }: HeaderProps)
           <div className="relative" ref={profileMenuRef}>
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white/40 hover:bg-white/60 rounded-full transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="" className="w-5 h-5 rounded-full" />
