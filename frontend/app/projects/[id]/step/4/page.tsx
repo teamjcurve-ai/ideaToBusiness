@@ -3,13 +3,14 @@
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Play, RotateCw, Loader2, Layers, Lock } from 'lucide-react';
+import { Play, Download, RotateCw, Loader2, Layers, Lock } from 'lucide-react';
 import StepLayout from '@/components/StepLayout';
 import { StepSkeleton } from '@/components/SkeletonLoader';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { api } from '@/lib/api';
 import { aiRequest } from '@/lib/aiRequest';
 import { useProjectStore } from '@/store/projectStore';
+import { usePdfExport } from '@/hooks/usePdfExport';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -19,6 +20,7 @@ export default function Step4Page({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
   const { currentProject, setCurrentProject, updateStep } = useProjectStore();
+  const { exporting, exportStep } = usePdfExport();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [content, setContent] = useState('');
@@ -172,13 +174,27 @@ export default function Step4Page({ params }: PageProps) {
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <button
-                onClick={() => { setContent(''); handleGenerate(); }}
-                disabled={generating}
-                className="flex items-center gap-2 px-4 py-2 glass-card rounded-2xl text-gray-700 hover:bg-white/90 transition-all font-medium disabled:opacity-50"
-              >
-                <RotateCw className="w-4 h-4" /> 재생성
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setContent(''); handleGenerate(); }}
+                  disabled={generating}
+                  className="flex items-center gap-2 px-4 py-2 glass-card rounded-2xl text-gray-700 hover:bg-white/90 transition-all font-medium disabled:opacity-50"
+                >
+                  <RotateCw className="w-4 h-4" /> 재생성
+                </button>
+                <button
+                  onClick={() => exportStep(
+                    currentProject.title,
+                    new Date(currentProject.createdAt).toLocaleDateString('ko-KR'),
+                    4, '핵심 기능 선정', content
+                  )}
+                  disabled={exporting}
+                  className="flex items-center gap-2 px-4 py-2 glass-card rounded-2xl text-gray-700 hover:bg-white/90 transition-all font-medium disabled:opacity-50"
+                >
+                  {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                  다운로드
+                </button>
+              </div>
               <button
                 onClick={() => router.push(`/projects/${id}/step/5`)}
                 className="px-6 py-2.5 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-colors font-medium shadow-lg shadow-primary/25"

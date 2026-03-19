@@ -10,6 +10,7 @@ import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { api } from '@/lib/api';
 import { aiRequest } from '@/lib/aiRequest';
 import { useProjectStore } from '@/store/projectStore';
+import { usePdfExport } from '@/hooks/usePdfExport';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -19,6 +20,7 @@ export default function Step2Page({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
   const { currentProject, setCurrentProject, updateStep } = useProjectStore();
+  const { exporting, exportStep } = usePdfExport();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [content, setContent] = useState('');
@@ -192,8 +194,16 @@ export default function Step2Page({ params }: PageProps) {
                   재생성
                 </button>
 
-                <button className="flex items-center gap-2 px-4 py-2 glass-card rounded-2xl text-gray-700 hover:bg-white/90 transition-all font-medium">
-                  <Download className="w-4 h-4" />
+                <button
+                  onClick={() => exportStep(
+                    currentProject.title,
+                    new Date(currentProject.createdAt).toLocaleDateString('ko-KR'),
+                    2, '시장 리서치', content
+                  )}
+                  disabled={exporting}
+                  className="flex items-center gap-2 px-4 py-2 glass-card rounded-2xl text-gray-700 hover:bg-white/90 transition-all font-medium disabled:opacity-50"
+                >
+                  {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                   다운로드
                 </button>
               </div>

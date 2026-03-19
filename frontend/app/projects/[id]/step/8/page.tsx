@@ -3,13 +3,14 @@
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Play, RotateCw, Loader2, Rocket, CheckCircle2, Lock } from 'lucide-react';
+import { Play, Download, RotateCw, Loader2, Rocket, CheckCircle2, Lock, FileDown } from 'lucide-react';
 import StepLayout from '@/components/StepLayout';
 import { StepSkeleton } from '@/components/SkeletonLoader';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { api } from '@/lib/api';
 import { aiRequest } from '@/lib/aiRequest';
 import { useProjectStore } from '@/store/projectStore';
+import { usePdfExport } from '@/hooks/usePdfExport';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -19,6 +20,7 @@ export default function Step8Page({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
   const { currentProject, setCurrentProject, updateStep } = useProjectStore();
+  const { exporting, exportStep, exportAllSteps } = usePdfExport();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [content, setContent] = useState('');
@@ -178,25 +180,58 @@ export default function Step8Page({ params }: PageProps) {
             </div>
 
             {allCompleted && (
-              <div className="glass-heavy rounded-3xl p-6 mb-6 flex items-center gap-4">
-                <CheckCircle2 className="w-8 h-8 text-success flex-shrink-0" />
-                <div>
-                  <h3 className="font-semibold text-gray-900">모든 단계 완료!</h3>
-                  <p className="text-sm text-gray-600">
-                    파이프라인의 모든 단계가 완료되었습니다. 이제 실제 제품 개발을 시작할 준비가 되었습니다.
-                  </p>
+              <div className="glass-heavy rounded-3xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-4">
+                <div className="flex items-center gap-4 flex-1">
+                  <CheckCircle2 className="w-8 h-8 text-success flex-shrink-0" />
+                  <div>
+                    <h3 className="font-semibold text-gray-900">모든 단계 완료!</h3>
+                    <p className="text-sm text-gray-600">
+                      파이프라인의 모든 단계가 완료되었습니다. 이제 실제 제품 개발을 시작할 준비가 되었습니다.
+                    </p>
+                  </div>
                 </div>
+                <button
+                  onClick={() => exportAllSteps({
+                    projectTitle: currentProject.title,
+                    projectDate: new Date(currentProject.createdAt).toLocaleDateString('ko-KR'),
+                    steps: currentProject.steps.map((s: any) => ({
+                      stepNumber: s.stepNumber,
+                      name: s.name,
+                      content: s.content,
+                      data: s.data,
+                    })),
+                  })}
+                  disabled={exporting}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-colors font-medium disabled:opacity-50 shadow-lg shadow-primary/25"
+                >
+                  {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                  전체 PDF 다운로드
+                </button>
               </div>
             )}
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <button
-                onClick={() => { setContent(''); handleGenerate(); }}
-                disabled={generating}
-                className="flex items-center gap-2 px-4 py-2 glass-card rounded-2xl text-gray-700 hover:bg-white/90 transition-all font-medium disabled:opacity-50"
-              >
-                <RotateCw className="w-4 h-4" /> 재생성
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setContent(''); handleGenerate(); }}
+                  disabled={generating}
+                  className="flex items-center gap-2 px-4 py-2 glass-card rounded-2xl text-gray-700 hover:bg-white/90 transition-all font-medium disabled:opacity-50"
+                >
+                  <RotateCw className="w-4 h-4" /> 재생성
+                </button>
+                <button
+                  onClick={() => exportStep(
+                    currentProject.title,
+                    new Date(currentProject.createdAt).toLocaleDateString('ko-KR'),
+                    8, '킥오프 준비', content
+                  )}
+                  disabled={exporting}
+                  className="flex items-center gap-2 px-4 py-2 glass-card rounded-2xl text-gray-700 hover:bg-white/90 transition-all font-medium disabled:opacity-50"
+                >
+                  {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                  다운로드
+                </button>
+              </div>
               <button
                 onClick={() => router.push('/projects')}
                 className="px-6 py-2.5 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-colors font-medium shadow-lg shadow-primary/25"
