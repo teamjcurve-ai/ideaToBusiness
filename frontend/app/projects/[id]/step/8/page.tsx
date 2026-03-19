@@ -86,8 +86,10 @@ export default function Step8Page({ params }: PageProps) {
     }
   };
 
-  const prevStep = currentProject?.steps?.find((s: any) => s.stepNumber === 7);
-  const prevStepCompleted = prevStep?.status === 'COMPLETED';
+  const firstIncompleteStep = currentProject?.steps
+    ?.filter((s: any) => s.stepNumber < 8)
+    .find((s: any) => s.status !== 'COMPLETED');
+  const prevStepsCompleted = !firstIncompleteStep;
 
   if (loading || !currentProject) {
     return (
@@ -97,7 +99,7 @@ export default function Step8Page({ params }: PageProps) {
     );
   }
 
-  if (!prevStepCompleted) {
+  if (!prevStepsCompleted) {
     return (
       <StepLayout
         projectId={currentProject.id}
@@ -115,13 +117,13 @@ export default function Step8Page({ params }: PageProps) {
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">이전 단계를 먼저 완료해주세요</h3>
             <p className="text-gray-600 mb-6">
-              7단계를 완료해야 이 단계를 시작할 수 있습니다.
+              {firstIncompleteStep?.stepNumber}단계를 완료해야 이 단계를 시작할 수 있습니다.
             </p>
             <button
-              onClick={() => router.push(`/projects/${id}/step/7`)}
+              onClick={() => router.push(`/projects/${id}/step/${firstIncompleteStep?.stepNumber}`)}
               className="px-6 py-2.5 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-colors font-medium shadow-lg shadow-primary/25"
             >
-              7단계로 이동
+              {firstIncompleteStep?.stepNumber}단계로 이동
             </button>
           </div>
         </div>
