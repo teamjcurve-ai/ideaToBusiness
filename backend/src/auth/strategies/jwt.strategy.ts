@@ -3,35 +3,28 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
-import { passportJwtSecret } from 'jwks-rsa';
 
 function buildJwtOptions(configService: ConfigService): StrategyOptionsWithoutRequest {
-  const supabaseUrl = configService.get('SUPABASE_URL') || 'https://nsvlglfraqtqohojussj.supabase.co';
-  const jwtSecret = configService.get('SUPABASE_JWT_SECRET');
+  const publicKey = configService.get('SUPABASE_JWT_PUBLIC_KEY');
 
-  console.log('[JWT Strategy] SUPABASE_URL:', supabaseUrl);
-  console.log('[JWT Strategy] JWT_SECRET exists:', !!jwtSecret);
-
-  if (jwtSecret) {
+  if (publicKey) {
+    console.log('[JWT Strategy] Using ES256 public key');
     return {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: jwtSecret,
-      algorithms: ['HS256'],
-    };
+      secretOrKey: publicKey.replace(/\\n/g, '\n'),
+      algorithms: ['ES256'],
+    } as StrategyOptionsWithoutRequest;
   }
 
+  const jwtSecret = configService.get('SUPABASE_JWT_SECRET');
+  console.log('[JWT Strategy] Using HS256 legacy secret, exists:', !!jwtSecret);
   return {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     ignoreExpiration: false,
-    secretOrKeyProvider: passportJwtSecret({
-      cache: true,
-      rateLimit: true,
-      jwksRequestsPerMinute: 10,
-      jwksUri: `${supabaseUrl}/auth/v1/jwks`,
-    }),
-    algorithms: ['ES256'],
-  };
+    secretOrKey: jwtSecret || 'fallback-secret',
+    algorithms: ['HS256'],
+  } as StrategyOptionsWithoutRequest;
 }
 
 @Injectable()
