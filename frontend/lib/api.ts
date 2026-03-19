@@ -25,18 +25,10 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// 응답 인터셉터: 에러 처리
+// 응답 인터셉터: 에러 처리 (401 시 로그인으로 리다이렉트하지 않음 — ProtectedRoute가 처리)
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        if (supabase) {
-          await supabase.auth.signOut();
-        }
-        window.location.href = '/login';
-      }
-    }
     return Promise.reject(error);
   }
 );

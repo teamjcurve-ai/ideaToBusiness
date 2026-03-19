@@ -7,18 +7,22 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import Header from '@/components/Header';
 import { api } from '@/lib/api';
 import { useProjectStore } from '@/store/projectStore';
+import { useAuthStore } from '@/store/authStore';
 
 export default function ProjectsPage() {
   const router = useRouter();
   const { projects, setProjects } = useProjectStore();
+  const { session } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [newProject, setNewProject] = useState({ title: '', description: '' });
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    loadProjects();
-  }, []);
+    if (session) {
+      loadProjects();
+    }
+  }, [session]);
 
   const loadProjects = async () => {
     try {

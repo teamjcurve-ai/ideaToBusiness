@@ -32,9 +32,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div className="max-w-sm w-full">
-        <div className="glass-heavy rounded-3xl p-8 space-y-8">
+        <div className="bg-white rounded-3xl p-8 space-y-8 shadow-sm border border-gray-100">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
               ideaToBusiness
@@ -53,7 +53,7 @@ export default function LoginPage() {
           <button
             onClick={handleGoogleLogin}
             disabled={signingIn}
-            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 glass-card rounded-2xl text-gray-700 hover:bg-white/90 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-2xl text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
