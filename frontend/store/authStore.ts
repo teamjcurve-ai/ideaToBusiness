@@ -54,9 +54,12 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       const { data: { session } } = await supabase.auth.getSession();
       set({ session, user: session?.user ?? null, loading: false });
 
-      supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
         set({ session, user: session?.user ?? null });
       });
+
+      // 스토어에 unsubscribe 함수 저장 (cleanup 용도)
+      set({ _unsubscribe: () => subscription.unsubscribe() } as any);
     } catch {
       set({ loading: false });
     }

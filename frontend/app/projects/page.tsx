@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { Plus, FolderOpen, X } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { ProjectListSkeleton } from '@/components/SkeletonLoader';
 import Header from '@/components/Header';
 import { api } from '@/lib/api';
 import { useProjectStore } from '@/store/projectStore';
@@ -29,7 +31,7 @@ export default function ProjectsPage() {
       const response = await api.get('/projects');
       setProjects(response.data);
     } catch (error) {
-      console.error('프로젝트 로드 실패:', error);
+      // silently handle
     } finally {
       setLoading(false);
     }
@@ -43,7 +45,7 @@ export default function ProjectsPage() {
       const response = await api.post('/projects', newProject);
       router.push(`/projects/${response.data.id}/step/1`);
     } catch (error) {
-      console.error('프로젝트 생성 실패:', error);
+      toast.error('프로젝트 생성에 실패했습니다.');
     } finally {
       setCreating(false);
     }
@@ -86,9 +88,7 @@ export default function ProjectsPage() {
 
           {/* Projects Grid */}
           {loading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">프로젝트를 불러오는 중...</p>
-            </div>
+            <ProjectListSkeleton />
           ) : projects.length === 0 ? (
             <div className="glass-heavy rounded-3xl text-center py-16 px-6">
               <FolderOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />

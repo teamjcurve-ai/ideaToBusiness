@@ -40,7 +40,7 @@ export default function Header({ title, breadcrumb, onMenuToggle }: HeaderProps)
 
   return (
     <>
-      <header className="h-16 bg-white border-b border-gray-200 sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6">
+      <header className="h-16 bg-white border-b border-gray-200 sticky top-0 z-50 flex items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
           {onMenuToggle && (
             <button

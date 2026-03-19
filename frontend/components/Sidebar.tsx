@@ -68,8 +68,8 @@ export default function Sidebar({
   return (
     <aside
       className={`
-        w-64 bg-white border-r border-gray-200 flex flex-col h-[calc(100vh-4rem)]
-        fixed md:static inset-y-16 left-0 z-40
+        w-64 bg-gray-50 border-r border-gray-200 flex flex-col shrink-0
+        fixed md:static inset-y-0 top-16 left-0 z-40 md:z-auto
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}

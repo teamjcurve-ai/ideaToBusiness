@@ -13,17 +13,17 @@ export class OpenAIProvider implements AiProvider {
   private model: string;
 
   constructor(apiKey: string, model: string = 'gpt-4') {
-    this.client = new OpenAI({ apiKey });
+    this.client = new OpenAI({ apiKey, timeout: 60000 });
     this.model = model;
   }
 
   async generate(prompt: string, systemPrompt?: string): Promise<string> {
     const messages: any[] = [];
-    
+
     if (systemPrompt) {
       messages.push({ role: 'system', content: systemPrompt });
     }
-    
+
     messages.push({ role: 'user', content: prompt });
 
     const response = await this.client.chat.completions.create({
@@ -42,7 +42,7 @@ export class AnthropicProvider implements AiProvider {
   private model: string;
 
   constructor(apiKey: string, model: string = 'claude-3-5-sonnet-20241022') {
-    this.client = new Anthropic({ apiKey });
+    this.client = new Anthropic({ apiKey, timeout: 60000 });
     this.model = model;
   }
 
@@ -76,14 +76,24 @@ export class GoogleProvider implements AiProvider {
   }
 
   async generate(prompt: string, systemPrompt?: string): Promise<string> {
-    const model = this.client.getGenerativeModel({ model: this.model });
-    
-    const fullPrompt = systemPrompt 
-      ? `${systemPrompt}\n\n${prompt}` 
+    const model = this.client.getGenerativeModel({
+      model: this.model,
+      generationConfig: { candidateCount: 1 },
+    });
+
+    const fullPrompt = systemPrompt
+      ? `${systemPrompt}\n\n${prompt}`
       : prompt;
 
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    return response.text();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
+
+    try {
+      const result = await model.generateContent(fullPrompt);
+      const response = await result.response;
+      return response.text();
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 }

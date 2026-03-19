@@ -1,6 +1,6 @@
 import { ExtractJwt, Strategy, StrategyOptionsWithoutRequest } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
 
@@ -8,7 +8,6 @@ function buildJwtOptions(configService: ConfigService): StrategyOptionsWithoutRe
   const publicKey = configService.get('SUPABASE_JWT_PUBLIC_KEY');
 
   if (publicKey) {
-    console.log('[JWT Strategy] Using ES256 public key');
     return {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -18,17 +17,22 @@ function buildJwtOptions(configService: ConfigService): StrategyOptionsWithoutRe
   }
 
   const jwtSecret = configService.get('SUPABASE_JWT_SECRET');
-  console.log('[JWT Strategy] Using HS256 legacy secret, exists:', !!jwtSecret);
+  if (!jwtSecret) {
+    throw new Error('SUPABASE_JWT_PUBLIC_KEY 또는 SUPABASE_JWT_SECRET 환경변수가 설정되지 않았습니다.');
+  }
+
   return {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     ignoreExpiration: false,
-    secretOrKey: jwtSecret || 'fallback-secret',
+    secretOrKey: jwtSecret,
     algorithms: ['HS256'],
   } as StrategyOptionsWithoutRequest;
 }
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  private readonly logger = new Logger(JwtStrategy.name);
+
   constructor(
     configService: ConfigService,
     private authService: AuthService,
@@ -40,10 +44,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const supabaseId = payload.sub;
     const email = payload.email;
 
-    console.log('[JWT] Validating token for:', { supabaseId, email });
-
     if (!supabaseId || !email) {
-      console.error('[JWT] Missing supabaseId or email in token payload');
+      this.logger.warn('Missing supabaseId or email in token payload');
       throw new UnauthorizedException('인증되지 않은 사용자입니다.');
     }
 
@@ -55,14 +57,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       );
 
       if (!user) {
-        console.error('[JWT] findOrCreateUser returned null');
+        this.logger.warn('findOrCreateUser returned null');
         throw new UnauthorizedException('인증되지 않은 사용자입니다.');
       }
 
-      console.log('[JWT] User authenticated:', user.id);
       return user;
     } catch (error) {
-      console.error('[JWT] Error in validate:', error);
+      this.logger.error('Error in validate:', error);
       throw new UnauthorizedException('인증 처리 중 오류가 발생했습니다.');
     }
   }

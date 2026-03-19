@@ -2,8 +2,10 @@
 
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { Play, Download, RotateCw, Loader2, Lock } from 'lucide-react';
 import StepLayout from '@/components/StepLayout';
+import { StepSkeleton } from '@/components/SkeletonLoader';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { api } from '@/lib/api';
 import { aiRequest } from '@/lib/aiRequest';
@@ -35,7 +37,7 @@ export default function Step2Page({ params }: PageProps) {
         setContent(step.content);
       }
     } catch (error) {
-      console.error('프로젝트 로드 실패:', error);
+      // silently handle
     } finally {
       setLoading(false);
     }
@@ -46,7 +48,7 @@ export default function Step2Page({ params }: PageProps) {
     try {
       const step1 = currentProject?.steps.find((s) => s.stepNumber === 1);
       if (!step1?.data) {
-        alert('먼저 1단계에서 아이디어를 입력해주세요.');
+        toast.error('먼저 1단계에서 아이디어를 입력해주세요.');
         return;
       }
 
@@ -63,7 +65,7 @@ export default function Step2Page({ params }: PageProps) {
       setContent(generatedContent);
       updateStep(id, 2, { content: generatedContent, status: 'COMPLETED' });
     } catch (error: any) {
-      alert(error.response?.data?.message || error.message || '생성에 실패했습니다.');
+      toast.error(error.response?.data?.message || error.message || '생성에 실패했습니다.');
     } finally {
       setGenerating(false);
     }
@@ -84,7 +86,7 @@ export default function Step2Page({ params }: PageProps) {
         await api.delete(`/projects/${id}`);
         router.push('/projects');
       } catch (error) {
-        console.error('삭제 실패:', error);
+        toast.error('삭제에 실패했습니다.');
       }
     }
   };
@@ -95,11 +97,7 @@ export default function Step2Page({ params }: PageProps) {
   const prevStepsCompleted = !firstIncompleteStep;
 
   if (loading || !currentProject) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">로딩 중...</p>
-      </div>
-    );
+    return <StepSkeleton />;
   }
 
   if (!prevStepsCompleted) {

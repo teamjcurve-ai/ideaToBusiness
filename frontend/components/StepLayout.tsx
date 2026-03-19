@@ -30,14 +30,14 @@ export default function StepLayout({
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen flex flex-col">
+      <div className="h-screen flex flex-col">
         <Header
           title={projectTitle}
           breadcrumb={breadcrumb}
           onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        <div className="flex flex-1 relative">
+        <div className="flex flex-1 overflow-hidden">
           {/* Mobile backdrop */}
           {sidebarOpen && (
             <div

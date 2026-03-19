@@ -2,8 +2,10 @@
 
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { Save } from 'lucide-react';
 import StepLayout from '@/components/StepLayout';
+import { StepSkeleton } from '@/components/SkeletonLoader';
 import { api } from '@/lib/api';
 import { useProjectStore } from '@/store/projectStore';
 
@@ -49,7 +51,7 @@ export default function Step1Page({ params }: PageProps) {
         setFormData(step.data);
       }
     } catch (error) {
-      console.error('프로젝트 로드 실패:', error);
+      // silently handle
     } finally {
       setLoading(false);
     }
@@ -68,7 +70,7 @@ export default function Step1Page({ params }: PageProps) {
       await api.put(`/projects/${id}`, { currentStep: 2 });
       router.push(`/projects/${id}/step/2`);
     } catch (error) {
-      console.error('저장 실패:', error);
+      toast.error('저장에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -89,21 +91,13 @@ export default function Step1Page({ params }: PageProps) {
         await api.delete(`/projects/${id}`);
         router.push('/projects');
       } catch (error) {
-        console.error('삭제 실패:', error);
+        toast.error('삭제에 실패했습니다.');
       }
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">로딩 중...</p>
-      </div>
-    );
-  }
-
-  if (!currentProject) {
-    return null;
+  if (loading || !currentProject) {
+    return <StepSkeleton />;
   }
 
   return (
